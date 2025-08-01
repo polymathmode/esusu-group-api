@@ -6,7 +6,18 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  getWelcome() {
+    return {
+      message: "Welcome to Esusu Group API",
+      version: "1.0.0",
+      documentation: "/api/docs",
+      endpoints: {
+        auth: ["/auth/register", "/auth/login", "/auth/profile"],
+        groups: ["/groups", "/groups/search", "/groups/:id/join"],
+        users: ["/users/profile", "/users/invites"]
+      },
+      status: "Live and Running 🚀",
+      description: "A NestJS API for managing group savings (Esusu) - Built with TypeScript, Prisma, and JWT Authentication"
+    };
   }
 }
