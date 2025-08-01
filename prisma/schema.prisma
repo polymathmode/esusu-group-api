@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String
+  phoneNumber String   @map("phone_number")
+  password    String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  ownedGroups    Group[]       @relation("GroupOwner")
+  groupMember    GroupMember?
+  joinRequests   JoinRequest[]
+  sentInvites    Invite[]      @relation("InviteSender")
+  receivedInvites Invite[]     @relation("InviteReceiver")
+
+  @@map("users")
+}
+
+model Group {
+  id          String      @id @default(cuid())
+  name        String
+  description String
+  maxCapacity Int         @map("max_capacity")
+  visibility  Visibility  @default(PUBLIC)
+  inviteCode  String?     @unique @map("invite_code")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  // Relationships
+  ownerId      String       @map("owner_id")
+  owner        User         @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members      GroupMember[]
+  joinRequests JoinRequest[]
+  invites      Invite[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id        String   @id @default(cuid())
+  joinedAt  DateTime @default(now()) @map("joined_at")
+
+  // Relationships
+  userId  String @unique @map("user_id")
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId String @map("group_id")
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@map("group_members")
+}
+
+model JoinRequest {
+  id        String            @id @default(cuid())
+  status    JoinRequestStatus @default(PENDING)
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+
+  // Relationships
+  userId  String @map("user_id")
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId String @map("group_id")
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@map("join_requests")
+}
+
+model Invite {
+  id        String       @id @default(cuid())
+  status    InviteStatus @default(SENT)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  // Relationships
+  senderId   String @map("sender_id")
+  sender     User   @relation("InviteSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String @map("receiver_id")
+  receiver   User   @relation("InviteReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  groupId    String @map("group_id")
+  group      Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([receiverId, groupId])
+  @@map("invites")
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum InviteStatus {
+  SENT
+  ACCEPTED
+  DECLINED
+}
