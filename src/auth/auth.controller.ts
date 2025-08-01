@@ -35,13 +35,4 @@ export class AuthController {
   async getProfile(@Request() req) {
     return req.user;
   }
-  @Get('invites')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({ status: 200, description: 'User profile retrieved' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getInvites(@Request() req) {
-    return req.user;
-  }
 }
