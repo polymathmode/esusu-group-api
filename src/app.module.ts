@@ -6,6 +6,8 @@ import { AuthModule } from './auth/auth.module';
 import { GroupsModule } from './groups/groups.module';
 import { UsersModule } from './users/users.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { AppController } from './app.controller';
+
 
 @Module({
   imports: [
@@ -17,6 +19,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     GroupsModule,
     UsersModule,
   ],
+    controllers: [AppController],
   providers: [
     {
       provide: APP_FILTER,
